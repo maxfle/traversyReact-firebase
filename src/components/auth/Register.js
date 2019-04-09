@@ -12,19 +12,25 @@ class Login extends Component {
         password: ''
     };
 
+    componentWillMount() {
+        const { allowRegistration } = this.props.settings;
+
+        if(!allowRegistration) {
+            this.props.history.push('/');
+        }
+    }
+
     onSubmit = e => {
         e.preventDefault();
 
         const { firebase, notifyUser } = this.props;
         const { email, password } = this.state;
 
-        firebase.login({
-            email,
-            password
-        }).catch(err => notifyUser('Invalid Login Credentials', 'error'));
+        // Register with firebase
+        firebase.createUser({ email, password }).catch(err => notifyUser('That user already exists', 'error'))
     };
 
-    onChange = e => this.setState({[e.target.name]: e.target.value});
+    onChange = e => this.setState({[e.target.name]: e.target.value });
 
   render() {
       const { message, messageType } = this.props.notify;
@@ -39,7 +45,7 @@ class Login extends Component {
                     <h1 className="text-center pb-4 pt-3">
                         <span className="text-primary">
                             <i className="fas fa-lock"></i>{' '}
-                            Login
+                            Register
                         </span>
                     </h1>
                     <form onSubmit={this.onSubmit}>
@@ -63,7 +69,7 @@ class Login extends Component {
                              onChange={this.onChange}
                              />
                         </div>
-                        <input type="submit" value="Login" className="btn btn-primary btn-block"/>
+                        <input type="submit" value="Register" className="btn btn-primary btn-block"/>
                     </form>
                 </div>
             </div>
@@ -84,7 +90,8 @@ export default compose(
     firebaseConnect(),
     connect(
         (state, props) => ({
-        notify: state.notify
+        notify: state.notify,
+        settings: state.settings
     }),
     { notifyUser } 
     )
